@@ -2,8 +2,8 @@
 #define CHIP8_HPP
 
 #include "memory.hpp"
-#include <SDL2/SDL.h>
 #include <cstdint>
+#include <raylib.h>
 
 const size_t STACK_SIZE = 0x10;
 const size_t WIN_SIZE_X = 128;
@@ -17,7 +17,8 @@ public:
 
   void step();
   void sendInput(uint8_t key, bool value);
-  void drawscr(SDL_Renderer *renderer, int sizeX, int sizeY);
+  void drawScr(int sizeX, int sizeY);
+  void drawReg(int startY, int sizeX);
   void printreg();
 
   uint8_t V[0x10]; // V general purpose registers addressed V0-VF
@@ -37,6 +38,7 @@ public:
   uint8_t inputReg = 0;
   bool Paused = false;
 
+  uint16_t mem_start_render = 0;
   using op = void (*)(Chip8 *, uint8_t *);
   op opcodes[0x10];
 };

@@ -5,6 +5,7 @@
 #include <ctime>
 #include <iostream>
 #include <limits.h>
+#include <raylib.h>
 
 static inline uint16_t barrelShiftLeft(uint16_t val, uint16_t amount) {
   const uint16_t mask = (CHAR_BIT * sizeof(val) - 1);
@@ -448,8 +449,12 @@ void Chip8::step() {
   PC += 2;
   uint8_t op = IR[0] >> 4;
   opcodes[op](this, IR);
-  ST--;
-  DT--;
+  if (ST != 0) {
+    ST--;
+  }
+  if (DT != 0) {
+    DT--;
+  }
 }
 
 void Chip8::sendInput(uint8_t key, bool value) {
@@ -463,20 +468,78 @@ void Chip8::sendInput(uint8_t key, bool value) {
   }
 }
 
-void Chip8::drawscr(SDL_Renderer *renderer, int sizeX, int sizeY) {
-  SDL_Rect r;
-  r.h = sizeY / WIN_SIZE_Y;
-  r.w = sizeX / WIN_SIZE_X;
+void Chip8::drawScr(int sizeX, int sizeY) {
+  Rectangle r;
+  r.height = sizeY / WIN_SIZE_Y;
+  r.width = sizeX / WIN_SIZE_X;
   for (int j = 0; j < WIN_SIZE_Y; j++) {
     for (int i = 0; i < WIN_SIZE_X; i++) {
       int idx = i + (j * WIN_SIZE_X);
       if (FrameBuffer[idx]) {
-        r.x = i * r.w;
-        r.y = j * r.h;
-        SDL_RenderDrawRect(renderer, &r);
-        SDL_RenderFillRect(renderer, &r);
+        r.x = i * r.width;
+        r.y = j * r.height;
+        DrawRectangleRec(r, DARKGREEN);
       }
     }
+  }
+}
+
+void Chip8::drawReg(int startY, int sizeX) {
+  const auto color = LIGHTGRAY;
+  const int size = 20;
+  const int windowTop = startY;
+  char buf[512];
+  sprintf(buf, "PC: %#04x\tSP: %#04x\tIR: %#02x,%#02x\n", PC, SP, IR[0], IR[1]);
+  DrawText(buf, 0, startY, size, color);
+  startY += size;
+  sprintf(buf, "I: %#04x\tDT: %#04x\t ST: %#04x\n", I, DT, ST);
+  DrawText(buf, 0, startY, size, color);
+  startY += size;
+  int startX = 0;
+  for (int i = 0; i < 0x10; i++) {
+    sprintf(buf, "V[%#02x]=%#02x", i, V[i]);
+    DrawText(buf, startX, startY, size, color);
+    startX += 100;
+    if ((i + 1) % 4 == 0) {
+      startY += size;
+      startX = 0;
+    }
+  }
+
+  DrawText("Stack: ", 0, startY, size, color);
+  startY += size;
+  startX = 0;
+  for (int i = 0; i < 0x10; i++) {
+    sprintf(buf, "%#04x\t", Stack[i]);
+    DrawText(buf, startX, startY, size, color);
+    startX += 100;
+    if ((i + 1) % 4 == 0) {
+      startY += size;
+      startX = 0;
+    }
+  }
+
+  const int mem_render_size = 0x20;
+  startY = windowTop;
+  startX = sizeX / 2;
+  auto center = mem_start_render + (mem_render_size / 2);
+  auto diff = PC - center;
+  if (diff < 0) {
+    diff = -diff;
+  }
+  if (diff > 4) {
+    mem_start_render = PC - (mem_render_size / 2);
+  }
+  for (size_t i = 0; i < mem_render_size; i += 2) {
+    sprintf(buf, "mem[%#04x:%#04x]=%#04x%02x\n", (uint8_t)i + mem_start_render,
+            (uint8_t)i + 1 + mem_start_render, mem->get(i + mem_start_render),
+            mem->get(i + 1 + mem_start_render));
+    auto c = color;
+    if (i + mem_start_render == PC) {
+      c = DARKGREEN;
+    }
+    DrawText(buf, startX, startY, size, c);
+    startY += size;
   }
 }
 

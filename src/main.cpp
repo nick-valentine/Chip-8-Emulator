@@ -15,12 +15,14 @@ enum class StepMode {
 const int SCREEN_SIZE_MULTIPLIER = 8;
 const int SCREEN_HEIGHT = WIN_SIZE_Y * SCREEN_SIZE_MULTIPLIER;
 const int SCREEN_WIDTH = WIN_SIZE_X * SCREEN_SIZE_MULTIPLIER;
-const int CPU_INFO_HEIGHT = 240;
+const int CPU_INFO_HEIGHT = 120;
+const int CPU_INFO_WIDTH = 280;
 
 void load_rom(Memory *mem, uint16_t starting_address, std::string filename);
 
 int main() {
-  InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT + CPU_INFO_HEIGHT, "Chip-8-Emulator");
+  InitWindow(SCREEN_WIDTH + CPU_INFO_WIDTH, SCREEN_HEIGHT + CPU_INFO_HEIGHT,
+             "Chip-8-Emulator");
   SetTargetFPS(60);
 
   Memory mem(4096);
@@ -82,7 +84,7 @@ int main() {
     BeginDrawing();
     ClearBackground(DARKGRAY);
     cpu.drawScr(SCREEN_WIDTH, SCREEN_HEIGHT);
-    cpu.drawReg(SCREEN_HEIGHT, SCREEN_WIDTH);
+    cpu.drawReg(SCREEN_WIDTH, SCREEN_HEIGHT);
     EndDrawing();
   }
 

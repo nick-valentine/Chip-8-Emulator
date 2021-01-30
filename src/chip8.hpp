@@ -18,7 +18,7 @@ public:
   void step();
   void sendInput(uint8_t key, bool value);
   void drawScr(int sizeX, int sizeY);
-  void drawReg(int startY, int sizeX);
+  void drawReg(int winSizeX, int winSizeY);
   void printreg();
 
   uint8_t V[0x10]; // V general purpose registers addressed V0-VF

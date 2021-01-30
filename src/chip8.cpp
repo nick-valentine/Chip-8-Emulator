@@ -484,10 +484,10 @@ void Chip8::drawScr(int sizeX, int sizeY) {
   }
 }
 
-void Chip8::drawReg(int startY, int sizeX) {
+void Chip8::drawReg(int winSizeX, int winSizeY) {
   const auto color = LIGHTGRAY;
   const int size = 20;
-  const int windowTop = startY;
+  int startY = winSizeY;
   char buf[512];
   sprintf(buf, "PC: %#04x\tSP: %#04x\tIR: %#02x,%#02x\n", PC, SP, IR[0], IR[1]);
   DrawText(buf, 0, startY, size, color);
@@ -506,28 +506,29 @@ void Chip8::drawReg(int startY, int sizeX) {
     }
   }
 
-  DrawText("Stack: ", 0, startY, size, color);
+  startY = winSizeY;
+  DrawText("Stack: ", winSizeX / 2, startY, size, color);
   startY += size;
-  startX = 0;
+  startX = winSizeX / 2;
   for (int i = 0; i < 0x10; i++) {
     sprintf(buf, "%#04x\t", Stack[i]);
     DrawText(buf, startX, startY, size, color);
     startX += 100;
     if ((i + 1) % 4 == 0) {
       startY += size;
-      startX = 0;
+      startX = winSizeX / 2;
     }
   }
 
-  const int mem_render_size = 0x20;
-  startY = windowTop;
-  startX = sizeX / 2;
+  const int mem_render_size = 0x3D;
+  startY = 0;
+  startX = winSizeX;
   auto center = mem_start_render + (mem_render_size / 2);
   auto diff = PC - center;
   if (diff < 0) {
     diff = -diff;
   }
-  if (diff > 4) {
+  if (diff > mem_render_size / 2) {
     mem_start_render = PC - (mem_render_size / 2);
   }
   for (size_t i = 0; i < mem_render_size; i += 2) {

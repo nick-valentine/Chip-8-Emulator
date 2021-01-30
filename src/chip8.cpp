@@ -21,13 +21,11 @@ static inline uint16_t barrelShiftRight(uint16_t val, uint16_t amount) {
 static void Op0(Chip8 *c, uint8_t *instr) {
   switch (instr[1]) {
   case 0xE0:
-    std::cout << "CLS" << std::endl;
     for (size_t i = 0; i < WIN_SIZE; i++) {
       c->FrameBuffer[i] = false;
     }
     return;
   case 0xEE:
-    std::cout << "RET" << std::endl;
     if (c->SP < 0) {
       std::cout << "Stack underflow" << std::endl;
       exit(1);
@@ -204,11 +202,8 @@ static void DRW(Chip8 *c, uint8_t *instr) {
   uint8_t count = instr[1] & 0xF;
   for (uint8_t i = 0; i < count; i++) {
     uint8_t value = c->mem->get(c->I + i);
-    std::cout << "Value from: " << c->I << " = " << (int)value << std::endl;
     for (size_t j = sizeof(uint8_t) * 8; j > 0; j--) {
       size_t idx = x + (y * WIN_SIZE_X);
-      std::cout << "setting coordinate " << (int)x << " " << (int)y << " "
-                << idx << std::endl;
       x = (x + 1) % WIN_SIZE_X;
       bool bit = (value & (1 << j)) != 0;
       bool oldVal = c->FrameBuffer[idx];
@@ -257,7 +252,8 @@ static void OpF(Chip8 *c, uint8_t *instr) {
   {
     // wait for a key press, store the value of key into Vx
     // pause CPU till key is pressed
-    std::cout << "Instruction not yet implemented" << std::endl;
+    c->inputReg = reg;
+    c->Paused = true;
     return;
   }
   case 0x15: // LD DT, xVx
@@ -272,9 +268,6 @@ static void OpF(Chip8 *c, uint8_t *instr) {
   }
   case 0x1E: // ADD I, Vx
   {
-    std::cout << "old I: " << c->I << " adding reg: " << (int)reg
-              << " to I: " << (int)c->V[reg] << " + " << (int)c->I << " = "
-              << c->V[reg] + c->I << std::endl;
     c->I = c->I + c->V[reg];
     return;
   }
@@ -282,9 +275,6 @@ static void OpF(Chip8 *c, uint8_t *instr) {
   {
     // set the value of I to the location for the hex sprite corresponding to
     // the value of Vx
-    std::cout << "old I: " << c->I << " setting I: " << (int)c->V[reg] << " * "
-              << (int)CHAR_SPRITE_SIZE << " = " << c->V[reg] * CHAR_SPRITE_SIZE
-              << std::endl;
     c->I = c->V[reg] * CHAR_SPRITE_SIZE;
     return;
   }
@@ -450,6 +440,9 @@ Chip8::Chip8(Memory *m) : PC(0x200), mem(m) {
 }
 
 void Chip8::step() {
+  if (Paused) {
+    return;
+  }
   IR[0] = mem->get(PC + 1);
   IR[1] = mem->get(PC);
   PC += 2;
@@ -457,17 +450,31 @@ void Chip8::step() {
   opcodes[op](this, IR);
 }
 
-void Chip8::printscr() {
+void Chip8::sendInput(uint8_t key, bool value) {
+  KeyPad[key & 0xF] = value;
+  if (value) {
+    if (Paused) {
+      V[inputReg] = key & 0xF;
+      inputReg = 0;
+    }
+    Paused = false;
+  }
+}
+
+void Chip8::drawscr(SDL_Renderer *renderer, int sizeX, int sizeY) {
+  SDL_Rect r;
+  r.h = sizeY / WIN_SIZE_Y;
+  r.w = sizeX / WIN_SIZE_X;
   for (int j = 0; j < WIN_SIZE_Y; j++) {
     for (int i = 0; i < WIN_SIZE_X; i++) {
       int idx = i + (j * WIN_SIZE_X);
       if (FrameBuffer[idx]) {
-        std::cout << "▓";
-      } else {
-        std::cout << " ";
+        r.x = i * r.w;
+        r.y = j * r.h;
+        SDL_RenderDrawRect(renderer, &r);
+        SDL_RenderFillRect(renderer, &r);
       }
     }
-    std::cout << std::endl;
   }
 }
 

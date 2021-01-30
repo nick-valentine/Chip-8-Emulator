@@ -2,6 +2,7 @@
 #define CHIP8_HPP
 
 #include "memory.hpp"
+#include <SDL2/SDL.h>
 #include <cstdint>
 
 const size_t STACK_SIZE = 0x10;
@@ -15,7 +16,8 @@ public:
   Chip8(Memory *m);
 
   void step();
-  void printscr();
+  void sendInput(uint8_t key, bool value);
+  void drawscr(SDL_Renderer *renderer, int sizeX, int sizeY);
   void printreg();
 
   uint8_t V[0x10]; // V general purpose registers addressed V0-VF
@@ -31,6 +33,9 @@ public:
   Memory *mem;
   bool FrameBuffer[WIN_SIZE];
   bool KeyPad[0x10];
+
+  uint8_t inputReg = 0;
+  bool Paused = false;
 
   using op = void (*)(Chip8 *, uint8_t *);
   op opcodes[0x10];

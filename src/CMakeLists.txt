@@ -1,0 +1,6 @@
+SET (SOURCES
+    ${SOURCES}
+    ${CMAKE_CURRENT_SOURCE_DIR}/memory.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/chip8.cpp
+    PARENT_SCOPE
+)

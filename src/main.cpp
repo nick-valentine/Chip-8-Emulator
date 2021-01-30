@@ -1,8 +1,10 @@
 #include "chip8.hpp"
 #include "memory.hpp"
 #include <SDL2/SDL.h>
+#include <fstream>
 #include <iostream>
 #include <map>
+#include <string>
 
 const int SCREEN_SIZE_MULTIPLIER = 8;
 const int SCREEN_HEIGHT = WIN_SIZE_Y * SCREEN_SIZE_MULTIPLIER;
@@ -12,6 +14,8 @@ bool init();
 void close();
 void sdl_error(const char *wat);
 
+void load_rom(Memory *mem, uint16_t starting_address, std::string filename);
+
 SDL_Window *g_window = nullptr;
 SDL_Renderer *g_chip8_renderer = nullptr;
 
@@ -20,32 +24,35 @@ int main() {
 
   Chip8 cpu(&mem);
 
-  // CLS
-  mem.set16(0x200, 0x00E0);
-  // Load location for sprite 0 into I
-  mem.set16(0x202, 0x600F); // ld 0 E
-  mem.set16(0x204, 0xF029); // ld I V[0]
-  mem.set16(0x206, 0x6003); // ld 0 3
-  mem.set16(0x208, 0x6103); // ld 1 3
-  // Draw sprite 0
-  mem.set16(0x20A, 0xD011); // draw (V[0], V[1]) <- 1 byte
-  mem.set16(0x20C, 0x6A02); // ld A 01
-  mem.set16(0x20E, 0xFA1E); // Add I V[A]
-  mem.set16(0x210, 0x7101); // add V[1] 1
-  mem.set16(0x212, 0xD011); // draw (V[0], V[1]) <- 1 byte
-  mem.set16(0x214, 0xFA1E); // Add I V[A]
-  mem.set16(0x216, 0x7101); // add V[1] 1
-  mem.set16(0x218, 0xD011); // draw (V[0], V[1]) <- 1 byte
-  mem.set16(0x21A, 0xFA1E); // Add I V[A]
-  mem.set16(0x21C, 0x7101); // add V[1] 1
-  mem.set16(0x21E, 0xD011); // draw (V[0], V[1]) <- 1 byte
-  mem.set16(0x220, 0xFA1E); // Add I V[A]
-  mem.set16(0x222, 0x7101); // add V[1] 1
-  mem.set16(0x224, 0xD011); // draw (V[0], V[1]) <- 1 byte
-  mem.set16(0x226, 0x1226); // Loop in place
+  // load_rom(&mem, 0x200, "./roms/test_opcode.ch8");
+  load_rom(&mem, 0x200, "./roms/random_number_test.ch8");
 
-  mem.dump(0, 0xA5);
-  mem.dump(0x200, 0x225);
+  // CLS
+  // mem.set16(0x200, 0x00E0);
+  //// Load location for sprite 0 into I
+  // mem.set16(0x202, 0x600F); // ld 0 E
+  // mem.set16(0x204, 0xF029); // ld I V[0]
+  // mem.set16(0x206, 0x6003); // ld 0 3
+  // mem.set16(0x208, 0x6103); // ld 1 3
+  //// Draw sprite 0
+  // mem.set16(0x20A, 0xD011); // draw (V[0], V[1]) <- 1 byte
+  // mem.set16(0x20C, 0x6A02); // ld A 01
+  // mem.set16(0x20E, 0xFA1E); // Add I V[A]
+  // mem.set16(0x210, 0x7101); // add V[1] 1
+  // mem.set16(0x212, 0xD011); // draw (V[0], V[1]) <- 1 byte
+  // mem.set16(0x214, 0xFA1E); // Add I V[A]
+  // mem.set16(0x216, 0x7101); // add V[1] 1
+  // mem.set16(0x218, 0xD011); // draw (V[0], V[1]) <- 1 byte
+  // mem.set16(0x21A, 0xFA1E); // Add I V[A]
+  // mem.set16(0x21C, 0x7101); // add V[1] 1
+  // mem.set16(0x21E, 0xD011); // draw (V[0], V[1]) <- 1 byte
+  // mem.set16(0x220, 0xFA1E); // Add I V[A]
+  // mem.set16(0x222, 0x7101); // add V[1] 1
+  // mem.set16(0x224, 0xD011); // draw (V[0], V[1]) <- 1 byte
+  // mem.set16(0x226, 0x1226); // Loop in place
+
+  // mem.dump(0, 0xA5);
+  // mem.dump(0x200, 0x225);
 
   std::map<int, bool> keyboard;
   keyboard[SDLK_1] = 0x1;
@@ -119,6 +126,7 @@ bool init() {
   }
 
   g_chip8_renderer = SDL_CreateRenderer(g_window, -1, 0);
+
   return true;
 }
 
@@ -133,4 +141,14 @@ void close() {
 void sdl_error(const char *wat) {
   printf("%s", wat);
   printf(": SDL_Error: %s\n", SDL_GetError());
+}
+
+void load_rom(Memory *mem, uint16_t starting_address, std::string filename) {
+  std::ifstream input(filename.c_str(), std::ios::binary);
+
+  // copies all data into buffer
+  std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(input), {});
+  for (const auto &i : buffer) {
+    mem->set(starting_address++, i);
+  }
 }

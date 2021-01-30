@@ -448,6 +448,8 @@ void Chip8::step() {
   PC += 2;
   uint8_t op = IR[0] >> 4;
   opcodes[op](this, IR);
+  ST--;
+  DT--;
 }
 
 void Chip8::sendInput(uint8_t key, bool value) {

@@ -12,6 +12,7 @@ enum class StepMode {
   SINGLE,
 };
 
+const char *TITLE = "Chip 8 Emulator";
 const int SCREEN_SIZE_MULTIPLIER = 8;
 const int SCREEN_HEIGHT = WIN_SIZE_Y * SCREEN_SIZE_MULTIPLIER;
 const int SCREEN_WIDTH = WIN_SIZE_X * SCREEN_SIZE_MULTIPLIER;
@@ -22,13 +23,11 @@ void load_rom(Memory *mem, uint16_t starting_address, std::string filename);
 
 int main() {
   InitWindow(SCREEN_WIDTH + CPU_INFO_WIDTH, SCREEN_HEIGHT + CPU_INFO_HEIGHT,
-             "Chip-8-Emulator");
+             TITLE);
   SetTargetFPS(60);
 
   Memory mem(4096);
   Chip8 cpu(&mem);
-  load_rom(&mem, 0x200, "./roms/test_opcode.ch8");
-  // load_rom(&mem, 0x200, "./roms/random_number_test.ch8");
 
   std::map<int, std::pair<int, bool>> keyboard;
   keyboard[KEY_ONE] = {0x1, false};
@@ -49,9 +48,24 @@ int main() {
   keyboard[KEY_V] = {0xF, false};
 
   auto runMode = StepMode::SINGLE;
-  bool shouldStep = true;
+  bool shouldStep = false;
+
+  int count = 0;
+  char **droppedFiles = {0};
 
   while (!WindowShouldClose()) {
+
+    if (IsFileDropped()) {
+      droppedFiles = GetDroppedFiles(&count);
+      mem.clear();
+      cpu = Chip8(&mem);
+      load_rom(&mem, 0x200, droppedFiles[0]);
+      ClearDroppedFiles();
+      std::string newTitle(TITLE);
+      newTitle += std::string(droppedFiles[0]);
+      SetWindowTitle(newTitle.c_str());
+    }
+
     if (shouldStep) {
       cpu.step();
       if (runMode == StepMode::SINGLE) {

@@ -31,7 +31,7 @@ static void Op0(Chip8 *c, uint8_t *instr) {
       std::cout << "Stack underflow" << std::endl;
       exit(1);
     }
-    c->PC = c->Stack[c->SP];
+    c->PC = c->Stack[c->SP - 1];
     c->SP--;
     return;
   }
@@ -46,12 +46,12 @@ static void JMP(Chip8 *c, uint8_t *instr) {
 static void CALL(Chip8 *c, uint8_t *instr) {
   uint16_t addr = instr[1];
   addr |= (instr[0] & 0xF) << 8;
-  c->SP++;
   if (c->SP >= STACK_SIZE) {
     std::cout << "Stack overflow" << std::endl;
     exit(1);
   }
-  c->Stack[c->SP] = c->PC;
+  c->SP++;
+  c->Stack[c->SP - 1] = c->PC;
   c->PC = addr;
 }
 

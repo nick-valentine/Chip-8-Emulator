@@ -222,7 +222,7 @@ static bool DRW(Chip8 *c, uint8_t *instr) {
   for (uint8_t i = 0; i < count; i++) {
     uint8_t value = c->mem->get(c->I + i);
     x = sprite_start_x;
-    for (size_t j = sizeof(uint8_t) * 8; j > 0; j--) {
+    for (ssize_t j = sizeof(uint8_t) * 8; j >= 0; j--) {
       size_t idx = x + (y * WIN_SIZE_X);
       x = (x + 1) % WIN_SIZE_X;
       bool bit = (value & (1 << j)) != 0;

@@ -1,6 +1,7 @@
 Chip 8 Emulator
 ---
 
+Basic Chip 8 Emulator, only understands the initial set of instructions from devernay's reference.
 
 Technical References
 ---

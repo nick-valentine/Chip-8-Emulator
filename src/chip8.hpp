@@ -15,7 +15,8 @@ class Chip8 {
 public:
   Chip8(Memory *m);
 
-  void step();
+  void step(int count);
+  void fixedUpdate();
   void sendInput(uint8_t key, bool value);
   void drawScr(int sizeX, int sizeY);
   void drawReg(int winSizeX, int winSizeY);
@@ -39,9 +40,11 @@ public:
 
   uint8_t inputReg = 0;
   bool Paused = false;
+  bool errStackUnderflow = false;
+  bool errStackOverflow = false;
 
   uint16_t mem_start_render = 0;
-  using op = void (*)(Chip8 *, uint8_t *);
+  using op = bool (*)(Chip8 *, uint8_t *);
   op opcodes[0x10];
 };
 

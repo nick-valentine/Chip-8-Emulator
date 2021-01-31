@@ -16,7 +16,7 @@ const char *TITLE = "Chip 8 Emulator";
 const int SCREEN_SIZE_MULTIPLIER = 8;
 const int SCREEN_HEIGHT = WIN_SIZE_Y * SCREEN_SIZE_MULTIPLIER;
 const int SCREEN_WIDTH = WIN_SIZE_X * SCREEN_SIZE_MULTIPLIER;
-const int CPU_INFO_HEIGHT = 120;
+const int CPU_INFO_HEIGHT = 240;
 const int CPU_INFO_WIDTH = 560;
 
 void load_rom(Memory *mem, uint16_t starting_address, std::string filename);
@@ -67,16 +67,19 @@ int main() {
     }
 
     if (shouldStep) {
-      cpu.step();
+      cpu.step((runMode == StepMode::RUN) ? 1000 : 1);
       if (runMode == StepMode::SINGLE) {
         shouldStep = false;
       }
+      cpu.fixedUpdate();
     }
 
     for (auto &i : keyboard) {
-      if (IsKeyDown(i.first) && !i.second.second) {
-        cpu.sendInput(i.second.first, true);
-        i.second.second = true;
+      if (IsKeyDown(i.first)) {
+        if (!i.second.second) {
+          cpu.sendInput(i.second.first, true);
+          i.second.second = true;
+        }
       } else if (i.second.second) {
         cpu.sendInput(i.second.first, false);
         i.second.second = false;

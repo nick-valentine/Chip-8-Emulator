@@ -16,7 +16,7 @@ const int SCREEN_SIZE_MULTIPLIER = 8;
 const int SCREEN_HEIGHT = WIN_SIZE_Y * SCREEN_SIZE_MULTIPLIER;
 const int SCREEN_WIDTH = WIN_SIZE_X * SCREEN_SIZE_MULTIPLIER;
 const int CPU_INFO_HEIGHT = 120;
-const int CPU_INFO_WIDTH = 280;
+const int CPU_INFO_WIDTH = 560;
 
 void load_rom(Memory *mem, uint16_t starting_address, std::string filename);
 

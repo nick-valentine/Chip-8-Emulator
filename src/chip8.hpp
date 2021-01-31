@@ -20,12 +20,14 @@ public:
   void drawScr(int sizeX, int sizeY);
   void drawReg(int winSizeX, int winSizeY);
   void printreg();
+  std::string dissasemble(uint8_t *instr);
 
   uint8_t V[0x10]; // V general purpose registers addressed V0-VF
   uint16_t I = 0;  // I register
   uint8_t DT = 0;  // Delay Timer register
   uint8_t ST = 0;  // Sound Timer register
 
+  uint16_t SEED = 0;
   uint16_t PC = 0; // Program Counter
   uint8_t SP = 0;  // Stack Pointer
   uint8_t IR[2];
